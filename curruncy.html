@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RateX Pro - Currency Converter</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts (Updated with italics and 900 weight for the logo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        
+        /* Spin animation for swap button */
+        .spin-once {
+            animation: spin 0.3s ease-in-out;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg) scale(0.9); }
+            to { transform: rotate(180deg) scale(1); }
+        }
+        
+        /* Number transition wrapper */
+        .number-transition {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Hide elements gracefully */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 selection:bg-blue-500 selection:text-white pb-10">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 bg-slate-900 text-white shadow-lg shadow-slate-900/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex items-center cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 50" class="h-10 w-auto drop-shadow-md">
+                        <defs>
+                            <linearGradient id="logoXGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" />
+                                <stop offset="40%" stop-color="#4ade80" />
+                                <stop offset="100%" stop-color="#16a34a" />
+                            </linearGradient>
+                            <linearGradient id="logoBarGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#84cc16" />
+                                <stop offset="100%" stop-color="#4ade80" />
+                            </linearGradient>
+                            <linearGradient id="logoBarBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" />
+                                <stop offset="100%" stop-color="#2563eb" />
+                            </linearGradient>
+                        </defs>
+                        <!-- rate -->
+                        <text x="0" y="32" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="24" fill="#ffffff" letter-spacing="-0.5">rate</text>
+                        <!-- X -->
+                        <text x="46" y="34" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="36" fill="url(#logoXGrad)">X</text>
+                        <!-- pro -->
+                        <text x="76" y="32" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="18" fill="#84cc16" letter-spacing="-0.5">pro</text>
+                        <!-- Chart Bars -->
+                        <rect x="25" y="38" width="5" height="4" fill="url(#logoBarGreen)" rx="1"/>
+                        <rect x="32" y="33" width="5" height="9" fill="url(#logoBarGreen)" rx="1"/>
+                        <rect x="39" y="27" width="5" height="15" fill="url(#logoBarBlue)" rx="1"/>
+                        <rect x="46" y="20" width="5" height="22" fill="url(#logoBarBlue)" rx="1"/>
+                        <!-- Swoosh arrow -->
+                        <path d="M 0 42 Q 25 40 48 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                        <polygon points="46,20 54,22 49,28" fill="#38bdf8" />
+                    </svg>
+                </div>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-8 font-medium">
+                    <button id="nav-personal" class="text-blue-400 border-b-2 border-blue-400 pb-1 transition-colors">Personal</button>
+                    <button id="nav-chart" class="text-slate-300 hover:text-white border-b-2 border-transparent pb-1 transition-colors">Chart</button>
+                </nav>
+
+                <!-- Actions -->
+                <div class="hidden md:flex items-center gap-4">
+                    <button id="theme-toggle" class="p-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition-all" aria-label="Toggle Theme">
+                        <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center gap-4">
+                    <button id="mobile-theme-toggle" class="p-2 text-slate-300">
+                        <i data-lucide="moon" id="mobile-theme-icon" class="w-5 h-5"></i>
+                    </button>
+                    <button id="mobile-menu-btn" class="p-2">
+                        <i data-lucide="menu" id="mobile-menu-icon" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-t border-slate-700 overflow-hidden transition-all duration-300">
+            <div class="px-4 py-6 flex flex-col gap-4">
+                <button id="mobile-nav-personal" class="text-left text-lg font-medium text-blue-400">Personal</button>
+                <button id="mobile-nav-chart" class="text-left text-lg font-medium text-slate-300">Chart</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== PERSONAL VIEW ==================== -->
+    <div id="view-personal" class="tab-content active">
+        <!-- HERO SECTION -->
+        <section class="relative pt-20 pb-32 overflow-hidden">
+            <!-- Background gradient graphics -->
+            <div class="absolute inset-0 bg-slate-900 pointer-events-none" style="clip-path: polygon(0 0, 100% 0, 100% 60%, 0 85%);">
+                <div class="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-1/2 left-0 -translate-x-1/3 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+            </div>
+
+            <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-6 animate-fade-in-up opacity-0">
+                    Live Currency Converter
+                </h1>
+                <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-12 animate-fade-in-up delay-100 opacity-0">
+                    Check real-time foreign exchange rates instantly. Trusted by millions of users worldwide for accurate and fast conversions.
+                </p>
+
+                <!-- CONVERTER CARD -->
+                <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-3xl p-6 md:p-10 text-left animate-fade-in-up delay-200 opacity-0">
+                    
+                    <div id="error-message" class="hidden mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium flex items-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5"></i> <span id="error-text"></span>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-end gap-6 relative">
+                        
+                        <!-- Amount Input -->
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Amount</label>
+                            <div class="relative border-2 border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 rounded-xl transition-all overflow-hidden bg-white dark:bg-slate-950">
+                                <span id="currency-symbol" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl">$</span>
+                                <input 
+                                    type="number" 
+                                    id="amount-input"
+                                    value="1000"
+                                    class="w-full bg-transparent pl-10 pr-4 py-4 text-2xl font-bold text-slate-900 dark:text-white outline-none"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- From Currency -->
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">From</label>
+                            <div class="relative border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950">
+                                <div class="flex items-center px-4 py-4">
+                                    <img id="from-flag" src="https://flagcdn.com/w40/us.png" alt="USD" class="w-8 h-8 rounded-full object-cover shadow-sm mr-3 border border-slate-100 dark:border-slate-800" />
+                                    <select id="from-currency" class="w-full bg-transparent text-xl font-bold text-slate-900 dark:text-white outline-none appearance-none cursor-pointer">
+                                        <!-- Options injected via JS -->
+                                    </select>
+                                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Swap Button -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:top-auto md:left-auto md:translate-x-0 md:translate-y-0 z-10 md:mb-2">
+                            <button id="swap-btn" class="bg-blue-600 text-white p-4 rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-colors border-4 border-white dark:border-slate-900 md:border-none" aria-label="Swap Currencies">
+                                <i data-lucide="arrow-right-left" id="swap-icon" class="w-6 h-6 transition-transform"></i>
+                            </button>
+                        </div>
+
+                        <!-- To Currency -->
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">To</label>
+                            <div class="relative border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950">
+                                <div class="flex items-center px-4 py-4">
+                                    <img id="to-flag" src="https://flagcdn.com/w40/eu.png" alt="EUR" class="w-8 h-8 rounded-full object-cover shadow-sm mr-3 border border-slate-100 dark:border-slate-800" />
+                                    <select id="to-currency" class="w-full bg-transparent text-xl font-bold text-slate-900 dark:text-white outline-none appearance-none cursor-pointer">
+                                        <!-- Options injected via JS -->
+                                    </select>
+                                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div class="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex-1 text-center md:text-left w-full">
+                            
+                            <!-- Skeleton Loader -->
+                            <div id="result-skeleton" class="animate-pulse flex flex-col gap-2">
+                                <div class="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                                <div class="h-12 w-64 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                            </div>
+                            
+                            <!-- Actual Data -->
+                            <div id="result-data" class="hidden">
+                                <p class="text-lg font-medium text-slate-500 dark:text-slate-400 mb-1">
+                                    <span id="display-amount">1,000</span> <span id="display-from-curr">USD</span> =
+                                </p>
+                                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                    <span id="display-result" class="number-transition">0.0000</span> <span id="display-to-curr" class="text-2xl md:text-3xl text-slate-500 font-semibold">EUR</span>
+                                </h2>
+                                <p class="mt-3 text-sm text-slate-500 font-medium">
+                                    1 <span class="rate-from">USD</span> = <span id="display-rate">0.000000</span> <span class="rate-to">EUR</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center md:items-end gap-3 w-full md:w-auto">
+                            <button id="convert-btn" class="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1">
+                                Convert Now
+                            </button>
+                            <p class="text-xs text-slate-400 font-medium flex items-center gap-1">
+                                <i data-lucide="activity" class="w-3 h-3"></i> Last updated: <span id="last-updated">--:--:--</span>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- LIVE EXCHANGE RATES SECTION -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Live Exchange Rates</h3>
+                    <p class="text-slate-500 dark:text-slate-400">Current market rates for base currency: <strong id="table-base-currency" class="text-slate-900 dark:text-white">USD</strong></p>
+                </div>
+                <button id="refresh-rates-btn" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Refresh Rates
+                </button>
+            </div>
+
+            <!-- Rates Grid Container -->
+            <div id="rates-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Cards injected via JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== CHART VIEW ==================== -->
+    <div id="view-chart" class="tab-content">
+        <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-3xl p-6 md:p-10">
+                
+                <!-- Chart Controls -->
+                <div class="flex flex-wrap items-end gap-4 mb-8 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Reference (Base)</label>
+                        <select id="chart-base-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Currency A</label>
+                        <select id="chart-curr1-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Currency B (Compare)</label>
+                        <select id="chart-curr2-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                            <option value="NONE">None - Single Chart</option>
+                            <!-- other options injected via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Chart Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-extrabold flex flex-wrap items-center gap-3">
+                            <span id="chart-main-title" class="text-slate-900 dark:text-white">EUR to USD Chart</span>
+                            <span id="chart-main-change" class="text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full text-base md:text-lg">+12.71%</span>
+                        </h2>
+                        <p id="chart-main-subtitle" class="text-slate-500 font-medium mt-1">Euro to US Dollar</p>
+                    </div>
+                    <div class="text-left md:text-right bg-slate-50 dark:bg-slate-800/50 py-2 px-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center justify-start md:justify-end gap-2 text-sm md:text-base font-bold text-slate-900 dark:text-white">
+                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span id="chart-current-rate-text">1 EUR = 1.1821 USD</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1 font-medium" id="chart-date-text">Feb 27, 2026 at 17:47 UTC</p>
+                    </div>
+                </div>
+
+                <!-- Timeframes -->
+                <div class="flex flex-wrap gap-2 justify-center mb-8" id="chart-timeframes">
+                    <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-tf="1W">1W</button>
+                    <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-tf="1M">1M</button>
+                    <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full bg-blue-600 text-white shadow-md shadow-blue-600/20 transition-colors" data-tf="1Y">1Y</button>
+                    <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-tf="5Y">5Y</button>
+                </div>
+
+                <!-- Main Canvas -->
+                <div class="w-full h-[400px] md:h-[500px] relative">
+                    <canvas id="big-chart"></canvas>
+                </div>
+                
+                <p id="chart-comparison-note" class="text-center text-xs text-slate-400 mt-6 hidden">
+                    *When comparing multiple currencies, the chart displays the normalized percentage change over the selected period.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 50" class="h-8 w-auto drop-shadow-md">
+                        <defs>
+                            <linearGradient id="footerXGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" />
+                                <stop offset="40%" stop-color="#4ade80" />
+                                <stop offset="100%" stop-color="#16a34a" />
+                            </linearGradient>
+                            <linearGradient id="footerBarGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#84cc16" />
+                                <stop offset="100%" stop-color="#4ade80" />
+                            </linearGradient>
+                            <linearGradient id="footerBarBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" />
+                                <stop offset="100%" stop-color="#2563eb" />
+                            </linearGradient>
+                        </defs>
+                        <!-- rate -->
+                        <text x="0" y="32" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="24" fill="#ffffff" letter-spacing="-0.5">rate</text>
+                        <!-- X -->
+                        <text x="46" y="34" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="36" fill="url(#footerXGrad)">X</text>
+                        <!-- pro -->
+                        <text x="76" y="32" font-family="'Inter', sans-serif" font-weight="900" font-style="italic" font-size="18" fill="#84cc16" letter-spacing="-0.5">pro</text>
+                        <!-- Chart Bars -->
+                        <rect x="25" y="38" width="5" height="4" fill="url(#footerBarGreen)" rx="1"/>
+                        <rect x="32" y="33" width="5" height="9" fill="url(#footerBarGreen)" rx="1"/>
+                        <rect x="39" y="27" width="5" height="15" fill="url(#footerBarBlue)" rx="1"/>
+                        <rect x="46" y="20" width="5" height="22" fill="url(#footerBarBlue)" rx="1"/>
+                        <!-- Swoosh arrow -->
+                        <path d="M 0 42 Q 25 40 48 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                        <polygon points="46,20 54,22 49,28" fill="#38bdf8" />
+                    </svg>
+                </div>
+                <div class="text-sm flex flex-wrap justify-center gap-6">
+                    <a href="#" class="hover:text-white transition-colors">About Us</a>
+                    <a href="#" class="hover:text-white transition-colors">API Docs</a>
+                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 pt-8 text-xs text-slate-500 text-center md:text-left leading-relaxed">
+                <p class="mb-2 text-sm font-medium text-slate-400">
+                    &copy; Alpha Items Group <span id="current-year"></span>
+                </p>
+                <p class="max-w-5xl">
+                    Alpha is authorised by the Financial Conduct Authority under the Electronic Money Regulations 2011, Firm Reference 900507, for the issuing of electronic money. Wise works with a local bank partner to offer the service in India with the approval of the Reserve Bank of India.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script>
+        // --- CONSTANTS & DATA ---
+        const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'NZD'];
+        
+        const CURRENCY_FLAGS = {
+            USD: 'us', EUR: 'eu', GBP: 'gb', JPY: 'jp', AUD: 'au', 
+            CAD: 'ca', CHF: 'ch', CNY: 'cn', INR: 'in', NZD: 'nz'
+        };
+
+        const CURRENCY_NAMES = {
+            USD: 'US Dollar', EUR: 'Euro', GBP: 'British Pound', JPY: 'Japanese Yen',
+            AUD: 'Australian Dollar', CAD: 'Canadian Dollar', CHF: 'Swiss Franc',
+            CNY: 'Chinese Yuan', INR: 'Indian Rupee', NZD: 'New Zealand Dollar'
+        };
+
+        const CURRENCY_SYMBOLS = {
+            USD: '$', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', 
+            CAD: 'C$', CHF: 'CHF', CNY: '¥', INR: '₹', NZD: 'NZ$'
+        };
+
+        // --- STATE ---
+        let state = {
+            amount: 1000,
+            fromCurrency: 'USD',
+            toCurrency: 'EUR',
+            rates: {},
+            lastUpdated: null,
+            isLoading: true,
+            
+            // Big Chart State
+            chartView: {
+                base: 'USD',
+                curr1: 'EUR',
+                curr2: 'NONE',
+                timeframe: '1Y', // 1W, 1M, 1Y, 5Y
+                instance: null
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            // Nav Elements
+            navPersonal: document.getElementById('nav-personal'),
+            navChart: document.getElementById('nav-chart'),
+            mobileNavPersonal: document.getElementById('mobile-nav-personal'),
+            mobileNavChart: document.getElementById('mobile-nav-chart'),
+            viewPersonal: document.getElementById('view-personal'),
+            viewChart: document.getElementById('view-chart'),
+
+            // Converter Elements
+            amountInput: document.getElementById('amount-input'),
+            currencySymbol: document.getElementById('currency-symbol'),
+            fromSelect: document.getElementById('from-currency'),
+            toSelect: document.getElementById('to-currency'),
+            fromFlag: document.getElementById('from-flag'),
+            toFlag: document.getElementById('to-flag'),
+            swapBtn: document.getElementById('swap-btn'),
+            swapIcon: document.getElementById('swap-icon'),
+            
+            resultSkeleton: document.getElementById('result-skeleton'),
+            resultData: document.getElementById('result-data'),
+            
+            displayAmount: document.getElementById('display-amount'),
+            displayFromCurr: document.getElementById('display-from-curr'),
+            displayResult: document.getElementById('display-result'),
+            displayToCurr: document.getElementById('display-to-curr'),
+            displayRate: document.getElementById('display-rate'),
+            rateFromSpans: document.querySelectorAll('.rate-from'),
+            rateToSpans: document.querySelectorAll('.rate-to'),
+            lastUpdated: document.getElementById('last-updated'),
+            
+            errorContainer: document.getElementById('error-message'),
+            errorText: document.getElementById('error-text'),
+            
+            // Table Elements
+            ratesGrid: document.getElementById('rates-grid'),
+            tableBaseCurrency: document.getElementById('table-base-currency'),
+            refreshBtn: document.getElementById('refresh-rates-btn'),
+
+            // Big Chart Elements
+            chartBaseSelect: document.getElementById('chart-base-select'),
+            chartCurr1Select: document.getElementById('chart-curr1-select'),
+            chartCurr2Select: document.getElementById('chart-curr2-select'),
+            chartMainTitle: document.getElementById('chart-main-title'),
+            chartMainChange: document.getElementById('chart-main-change'),
+            chartMainSubtitle: document.getElementById('chart-main-subtitle'),
+            chartCurrentRateText: document.getElementById('chart-current-rate-text'),
+            chartDateText: document.getElementById('chart-date-text'),
+            chartTimeframeBtns: document.querySelectorAll('.tf-btn'),
+            chartCanvas: document.getElementById('big-chart'),
+            chartComparisonNote: document.getElementById('chart-comparison-note'),
+
+            themeToggles: [document.getElementById('theme-toggle'), document.getElementById('mobile-theme-toggle')],
+            themeIcons: [document.getElementById('theme-icon'), document.getElementById('mobile-theme-icon')],
+            
+            mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+            mobileMenuIcon: document.getElementById('mobile-menu-icon'),
+            mobileMenu: document.getElementById('mobile-menu')
+        };
+
+        // --- INITIALIZATION ---
+        function init() {
+            lucide.createIcons();
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            // Populate Dropdowns for Converter
+            let optionsHTML = '';
+            SUPPORTED_CURRENCIES.forEach(c => {
+                optionsHTML += `<option value="${c}" class="text-slate-900">${c} - ${CURRENCY_NAMES[c]}</option>`;
+            });
+            els.fromSelect.innerHTML = optionsHTML;
+            els.toSelect.innerHTML = optionsHTML;
+            els.fromSelect.value = state.fromCurrency;
+            els.toSelect.value = state.toCurrency;
+
+            // Populate Dropdowns for Big Chart
+            els.chartBaseSelect.innerHTML = optionsHTML;
+            els.chartCurr1Select.innerHTML = optionsHTML;
+            els.chartCurr2Select.innerHTML = '<option value="NONE">None - Single Chart</option>' + optionsHTML;
+            
+            els.chartBaseSelect.value = state.chartView.base;
+            els.chartCurr1Select.value = state.chartView.curr1;
+            els.chartCurr2Select.value = state.chartView.curr2;
+            
+            updateFlags();
+            setupTheme();
+            setupTabs();
+            setupChartListeners();
+
+            // Converter Event Listeners
+            els.amountInput.addEventListener('input', debounce((e) => {
+                state.amount = parseFloat(e.target.value) || 0;
+                updateConversion();
+            }, 500));
+
+            els.fromSelect.addEventListener('change', (e) => {
+                state.fromCurrency = e.target.value;
+                updateFlags();
+                fetchRates();
+            });
+
+            els.toSelect.addEventListener('change', (e) => {
+                state.toCurrency = e.target.value;
+                updateFlags();
+                updateConversion();
+            });
+
+            els.swapBtn.addEventListener('click', () => {
+                els.swapIcon.classList.add('spin-once');
+                setTimeout(() => els.swapIcon.classList.remove('spin-once'), 300);
+                
+                const temp = state.fromCurrency;
+                state.fromCurrency = state.toCurrency;
+                state.toCurrency = temp;
+                
+                els.fromSelect.value = state.fromCurrency;
+                els.toSelect.value = state.toCurrency;
+                updateFlags();
+                fetchRates();
+            });
+
+            els.refreshBtn.addEventListener('click', fetchRates);
+
+            // Mobile Menu
+            let menuOpen = false;
+            els.mobileMenuBtn.addEventListener('click', () => {
+                menuOpen = !menuOpen;
+                if(menuOpen) {
+                    els.mobileMenu.classList.remove('hidden');
+                    els.mobileMenuIcon.setAttribute('data-lucide', 'x');
+                } else {
+                    els.mobileMenu.classList.add('hidden');
+                    els.mobileMenuIcon.setAttribute('data-lucide', 'menu');
+                }
+                lucide.createIcons();
+            });
+
+            // Initial Fetch
+            fetchRates();
+            setInterval(fetchRates, 60000);
+        }
+
+        // --- TAB NAVIGATION ---
+        function setupTabs() {
+            window.setTab = (tabName) => {
+                if (tabName === 'personal') {
+                    els.viewPersonal.classList.add('active');
+                    els.viewChart.classList.remove('active');
+                    
+                    els.navPersonal.classList.replace('text-slate-300', 'text-blue-400');
+                    els.navPersonal.classList.replace('border-transparent', 'border-blue-400');
+                    els.navChart.classList.replace('text-blue-400', 'text-slate-300');
+                    els.navChart.classList.replace('border-blue-400', 'border-transparent');
+
+                    els.mobileNavPersonal.classList.replace('text-slate-300', 'text-blue-400');
+                    els.mobileNavChart.classList.replace('text-blue-400', 'text-slate-300');
+                } else {
+                    els.viewPersonal.classList.remove('active');
+                    els.viewChart.classList.add('active');
+                    
+                    els.navChart.classList.replace('text-slate-300', 'text-blue-400');
+                    els.navChart.classList.replace('border-transparent', 'border-blue-400');
+                    els.navPersonal.classList.replace('text-blue-400', 'text-slate-300');
+                    els.navPersonal.classList.replace('border-blue-400', 'border-transparent');
+
+                    els.mobileNavChart.classList.replace('text-slate-300', 'text-blue-400');
+                    els.mobileNavPersonal.classList.replace('text-blue-400', 'text-slate-300');
+                    
+                    // Render chart when switching to view
+                    renderBigChart();
+                }
+                
+                // close mobile menu if open
+                els.mobileMenu.classList.add('hidden');
+                els.mobileMenuIcon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            };
+
+            els.navPersonal.addEventListener('click', () => window.setTab('personal'));
+            els.mobileNavPersonal.addEventListener('click', () => window.setTab('personal'));
+            
+            els.navChart.addEventListener('click', () => window.setTab('chart'));
+            els.mobileNavChart.addEventListener('click', () => window.setTab('chart'));
+        }
+
+        // --- UTILS ---
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function updateFlags() {
+            els.fromFlag.src = `https://flagcdn.com/w40/${CURRENCY_FLAGS[state.fromCurrency]}.png`;
+            els.toFlag.src = `https://flagcdn.com/w40/${CURRENCY_FLAGS[state.toCurrency]}.png`;
+            els.currencySymbol.textContent = CURRENCY_SYMBOLS[state.fromCurrency] || state.fromCurrency;
+        }
+
+        function getMock24hChange(currency) {
+            let hash = 0;
+            for (let i = 0; i < currency.length; i++) hash += currency.charCodeAt(i);
+            return (hash % 100) / 100 * 2 - 1; 
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 4); 
+                const currentVal = start + (end - start) * ease;
+                
+                obj.innerHTML = currentVal.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- CONVERTER & TABLE LOGIC ---
+        async function fetchRates() {
+            showLoading(true);
+            try {
+                els.errorContainer.classList.add('hidden');
+                const response = await fetch(`https://open.er-api.com/v6/latest/${state.fromCurrency}`);
+                const data = await response.json();
+                
+                if (data.result === "success") {
+                    state.rates = data.rates;
+                    state.lastUpdated = new Date(data.time_last_update_unix * 1000);
+                    
+                    updateConversion();
+                    renderCards();
+                    
+                    // If in chart view, refresh that too if base matches
+                    if(els.viewChart.classList.contains('active')) {
+                        renderBigChart();
+                    }
+                } else {
+                    throw new Error("API returned failure");
+                }
+            } catch (err) {
+                console.error(err);
+                els.errorText.textContent = 'Failed to fetch live exchange rates. Please try again later.';
+                els.errorContainer.classList.remove('hidden');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(isLoading) {
+            state.isLoading = isLoading;
+            if (isLoading) {
+                els.resultSkeleton.classList.remove('hidden');
+                els.resultData.classList.add('hidden');
+                renderCardsSkeleton();
+            } else {
+                els.resultSkeleton.classList.add('hidden');
+                els.resultData.classList.remove('hidden');
+            }
+        }
+
+        function updateConversion() {
+            if (!state.rates[state.toCurrency]) return;
+            
+            const rate = state.rates[state.toCurrency];
+            const result = state.amount * rate;
+            
+            els.displayAmount.textContent = state.amount.toLocaleString();
+            els.displayFromCurr.textContent = state.fromCurrency;
+            els.displayToCurr.textContent = state.toCurrency;
+            els.displayRate.textContent = rate.toFixed(6);
+            
+            els.rateFromSpans.forEach(span => span.textContent = state.fromCurrency);
+            els.rateToSpans.forEach(span => span.textContent = state.toCurrency);
+            
+            if (state.lastUpdated) {
+                els.lastUpdated.textContent = state.lastUpdated.toLocaleTimeString() + ' UTC';
+            }
+
+            const currentDisplayed = parseFloat(els.displayResult.textContent.replace(/,/g, '')) || 0;
+            animateValue(els.displayResult, currentDisplayed, result, 800);
+        }
+
+        function renderCardsSkeleton() {
+            let html = '';
+            for(let i=0; i<8; i++) {
+                html += `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm animate-pulse">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-6 h-6 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+                        <div class="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                    </div>
+                    <div class="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded mb-2"></div>
+                    <div class="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
+                    <div class="h-4 w-40 bg-slate-200 dark:bg-slate-800 rounded mb-6"></div>
+                    <div class="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                </div>`;
+            }
+            els.ratesGrid.innerHTML = html;
+        }
+
+        function renderCards() {
+            els.tableBaseCurrency.textContent = state.fromCurrency;
+
+            let html = '';
+            const filteredCurrencies = SUPPORTED_CURRENCIES.filter(c => c !== state.fromCurrency).slice(0, 8); // Showing up to 8 cards
+            
+            filteredCurrencies.forEach(currency => {
+                const rate = state.rates[currency] || 0;
+                const changePct = getMock24hChange(currency);
+                const isPositive = changePct >= 0;
+                const changeAmt = rate * (Math.abs(changePct) / 100);
+                
+                const colorClass = isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400';
+                const sign = isPositive ? '+' : '-';
+
+                html += `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-6">
+                        <img src="https://flagcdn.com/w40/${CURRENCY_FLAGS[currency]}.png" alt="${currency}" class="w-6 h-6 rounded-full object-cover shadow-sm" />
+                        <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">${CURRENCY_NAMES[currency]}</span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-[13px] text-slate-500 dark:text-slate-400 mb-1">1 ${state.fromCurrency} equals to</p>
+                        <h4 class="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight">${rate.toFixed(5)} ${currency}</h4>
+                        <p class="text-xs font-medium ${colorClass} mt-1.5">
+                            ${sign}${changeAmt.toFixed(4)} (${Math.abs(changePct).toFixed(2)}%) <span class="text-slate-400 dark:text-slate-500 font-normal ml-0.5">Weekly</span>
+                        </p>
+                    </div>
+                    
+                    <button onclick="viewChartFor('${currency}')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 mt-6 transition-colors">
+                        View chart <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-0.5"></i>
+                    </button>
+                </div>`;
+            });
+
+            els.ratesGrid.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        window.viewChartFor = function(currency) {
+            // Update big chart state
+            state.chartView.base = state.fromCurrency;
+            state.chartView.curr1 = currency;
+            state.chartView.curr2 = 'NONE';
+            
+            // Sync dropdowns in the chart view
+            els.chartBaseSelect.value = state.chartView.base;
+            els.chartCurr1Select.value = state.chartView.curr1;
+            els.chartCurr2Select.value = state.chartView.curr2;
+            
+            // Switch tab
+            window.setTab('chart');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
+
+
+        // --- BIG CHART LOGIC ---
+        function setupChartListeners() {
+            els.chartBaseSelect.addEventListener('change', (e) => {
+                if(e.target.value === state.chartView.curr1) {
+                    state.chartView.curr1 = state.chartView.base; // Swap
+                    els.chartCurr1Select.value = state.chartView.curr1;
+                }
+                state.chartView.base = e.target.value;
+                renderBigChart();
+            });
+
+            els.chartCurr1Select.addEventListener('change', (e) => {
+                if(e.target.value === state.chartView.base) {
+                    state.chartView.base = state.chartView.curr1; // Swap
+                    els.chartBaseSelect.value = state.chartView.base;
+                }
+                state.chartView.curr1 = e.target.value;
+                renderBigChart();
+            });
+
+            els.chartCurr2Select.addEventListener('change', (e) => {
+                state.chartView.curr2 = e.target.value;
+                renderBigChart();
+            });
+
+            els.chartTimeframeBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Update active button styling
+                    els.chartTimeframeBtns.forEach(b => {
+                        b.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-600/20');
+                        b.classList.add('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-800');
+                    });
+                    
+                    const target = e.currentTarget;
+                    target.classList.remove('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-800');
+                    target.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-600/20');
+
+                    state.chartView.timeframe = target.dataset.tf;
+                    renderBigChart();
+                });
+            });
+        }
+
+        function generateMockTimeSeries(startRate, days, isIndex = false) {
+            let labels = [];
+            let data = [];
+            let currentRate = startRate;
+            let volatility = 0.005; // daily volatility
+
+            const now = new Date();
+            for (let i = days; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                
+                // Random walk logic
+                if(i !== days) { // Keep start rate at index 0 for indexing
+                    const changePercent = (Math.random() * 2 - 1) * volatility;
+                    currentRate = currentRate * (1 + changePercent);
+                }
+
+                labels.push(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: days > 365 ? 'numeric' : undefined }));
+                
+                if (isIndex) {
+                    data.push(((currentRate / startRate) - 1) * 100); // Percentage change
+                } else {
+                    data.push(currentRate);
+                }
+            }
+            return { labels, data };
+        }
+
+        async function renderBigChart() {
+            // Need actual base rate to start the mock generation realistically
+            let actualRate1 = 1;
+            let actualRate2 = 1;
+            
+            // To simulate, we'll try to use the latest rates if available
+            if(state.rates[state.chartView.curr1] && state.chartView.base === state.fromCurrency) {
+                actualRate1 = state.rates[state.chartView.curr1];
+            } else {
+                actualRate1 = (Math.random() * 1.5) + 0.5; // fallback
+            }
+
+            if(state.chartView.curr2 !== 'NONE') {
+                if(state.rates[state.chartView.curr2] && state.chartView.base === state.fromCurrency) {
+                    actualRate2 = state.rates[state.chartView.curr2];
+                } else {
+                    actualRate2 = (Math.random() * 1.5) + 0.5; // fallback
+                }
+            }
+
+            let days = 30; // 1M default
+            if(state.chartView.timeframe === '1W') days = 7;
+            if(state.chartView.timeframe === '1Y') days = 365;
+            if(state.chartView.timeframe === '5Y') days = 365 * 5;
+
+            const isComparison = state.chartView.curr2 !== 'NONE';
+            
+            // Generate Data
+            const series1 = generateMockTimeSeries(actualRate1, days, isComparison);
+            const series2 = isComparison ? generateMockTimeSeries(actualRate2, days, isComparison) : null;
+
+            // Calculate percentage change for UI Title
+            const startVal1 = series1.data[0];
+            const endVal1 = series1.data[series1.data.length - 1];
+            let percentChange = 0;
+            if (isComparison) {
+                percentChange = endVal1; // it's already a % change
+            } else {
+                percentChange = ((endVal1 - startVal1) / startVal1) * 100;
+            }
+
+            const isPositive = percentChange >= 0;
+
+            // Update DOM Texts
+            if (isComparison) {
+                els.chartMainTitle.textContent = `${state.chartView.curr1} & ${state.chartView.curr2} vs ${state.chartView.base}`;
+                els.chartMainSubtitle.textContent = `Comparison tracking percentage change against ${CURRENCY_NAMES[state.chartView.base]}`;
+                els.chartCurrentRateText.textContent = `Comparing Performance`;
+                els.chartComparisonNote.classList.remove('hidden');
+            } else {
+                els.chartMainTitle.textContent = `${state.chartView.curr1} to ${state.chartView.base} Chart`;
+                els.chartMainSubtitle.textContent = `${CURRENCY_NAMES[state.chartView.curr1]} to ${CURRENCY_NAMES[state.chartView.base]}`;
+                els.chartCurrentRateText.textContent = `1 ${state.chartView.curr1} = ${endVal1.toFixed(4)} ${state.chartView.base}`;
+                els.chartComparisonNote.classList.add('hidden');
+            }
+            
+            els.chartMainChange.textContent = `${isPositive ? '+' : ''}${percentChange.toFixed(2)}% (${state.chartView.timeframe})`;
+            els.chartMainChange.className = `text-base md:text-lg px-3 py-1 rounded-full font-bold ${isPositive ? 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-400' : 'text-red-600 bg-red-100 dark:bg-red-900/40 dark:text-red-400'}`;
+            
+            els.chartDateText.textContent = new Date().toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+
+            // Initialize or Update Chart.js
+            const ctx = els.chartCanvas.getContext('2d');
+            
+            // Premium gradients
+            const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.4)'); // Tailwind blue-600
+            gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+            const gradientPurple = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientPurple.addColorStop(0, 'rgba(147, 51, 234, 0.4)'); // Tailwind purple-600
+            gradientPurple.addColorStop(1, 'rgba(147, 51, 234, 0.0)');
+
+            const datasets = [{
+                label: state.chartView.curr1,
+                data: series1.data,
+                borderColor: '#2563eb', // blue-600
+                backgroundColor: gradientBlue,
+                borderWidth: 2,
+                fill: true,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                tension: 0.1
+            }];
+
+            if (isComparison) {
+                datasets.push({
+                    label: state.chartView.curr2,
+                    data: series2.data,
+                    borderColor: '#9333ea', // purple-600
+                    backgroundColor: gradientPurple,
+                    borderWidth: 2,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    tension: 0.1
+                });
+            }
+
+            if (state.chartView.instance) {
+                state.chartView.instance.destroy();
+            }
+
+            // Detect theme for axes color
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+            const tickColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+
+            state.chartView.instance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: series1.labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: isComparison,
+                            position: 'top',
+                            labels: { color: tickColor, font: { family: 'Inter', weight: '500' } }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: isDark ? '#fff' : '#0f172a',
+                            bodyColor: isDark ? '#cbd5e1' : '#475569',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { size: 14, family: 'Inter', weight: 'bold' },
+                            bodyFont: { size: 13, family: 'Inter' },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (isComparison) {
+                                            label += context.parsed.y.toFixed(2) + '%';
+                                        } else {
+                                            label += context.parsed.y.toFixed(5);
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { 
+                                maxTicksLimit: 6, 
+                                color: tickColor,
+                                font: { family: 'Inter' }
+                            }
+                        },
+                        y: {
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: { 
+                                color: tickColor,
+                                font: { family: 'Inter' },
+                                callback: function(value) {
+                                    return isComparison ? value + '%' : value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- THEME MANAGEMENT ---
+        function setupTheme() {
+            let isDark = false;
+            const savedTheme = localStorage.getItem('fxpro_theme');
+            
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                isDark = true;
+                document.documentElement.classList.add('dark');
+            }
+
+            const updateIcons = () => {
+                const iconName = isDark ? 'sun' : 'moon';
+                els.themeIcons.forEach(icon => {
+                    if(icon) icon.setAttribute('data-lucide', iconName);
+                });
+                lucide.createIcons();
+                // Rerender big chart to update colors if active
+                if(state.chartView.instance) renderBigChart(); 
+            };
+            updateIcons();
+
+            const toggleTheme = () => {
+                isDark = !isDark;
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('fxpro_theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('fxpro_theme', 'light');
+                }
+                updateIcons();
+            };
+
+            els.themeToggles.forEach(toggle => {
+                if(toggle) toggle.addEventListener('click', toggleTheme);
+            });
+        }
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
