@@ -20,7 +20,7 @@
         }
     </script>
     
-    <!-- Google Fonts (Updated with italics and 900 weight for the logo) -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
     
     <!-- Chart.js -->
@@ -64,6 +64,21 @@
         .tab-content.active {
             display: block;
             opacity: 1;
+        }
+
+        /* Custom Scrollbar for Dropdowns */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
         }
     </style>
 </head>
@@ -133,7 +148,7 @@
             </div>
         </div>
 
-        <!-- Mobile Nav (Hidden by default) -->
+        <!-- Mobile Nav -->
         <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-t border-slate-700 overflow-hidden transition-all duration-300">
             <div class="px-4 py-6 flex flex-col gap-4">
                 <button id="mobile-nav-personal" class="text-left text-lg font-medium text-blue-400">Personal</button>
@@ -167,63 +182,58 @@
                         <i data-lucide="activity" class="w-5 h-5"></i> <span id="error-text"></span>
                     </div>
 
-                    <!-- Fixed Mobile Layout using flex and negative margins -->
-                    <div class="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 relative">
+                    <!-- Layout for Desktop (3 columns) and Mobile (Stacked with Swap correctly centered) -->
+                    <div class="flex flex-col md:flex-row items-end gap-4 md:gap-6 relative z-10">
                         
-                        <!-- Amount Input -->
-                        <div class="flex-1 w-full">
+                        <!-- Amount Input Box -->
+                        <div class="w-full md:w-[30%]">
                             <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Amount</label>
-                            <div class="relative border-2 border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 rounded-xl transition-all overflow-hidden bg-white dark:bg-slate-950">
-                                <span id="currency-symbol" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl">$</span>
+                            <div class="relative border-2 border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 rounded-xl transition-all overflow-hidden bg-white dark:bg-slate-950 h-[68px] flex items-center">
+                                <span id="currency-symbol" class="absolute left-4 text-slate-400 font-bold text-xl">$</span>
                                 <input 
                                     type="number" 
                                     id="amount-input"
                                     value="1000"
-                                    class="w-full bg-transparent pl-10 pr-4 py-4 text-2xl font-bold text-slate-900 dark:text-white outline-none"
+                                    class="w-full h-full bg-transparent pl-10 pr-4 text-2xl font-bold text-slate-900 dark:text-white outline-none"
                                     placeholder="0.00"
                                 />
                             </div>
                         </div>
 
-                        <!-- From Currency -->
-                        <div class="flex-1 w-full">
-                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">From</label>
-                            <div class="relative border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950">
-                                <div class="flex items-center px-4 py-4">
-                                    <img id="from-flag" src="https://flagcdn.com/w40/us.png" alt="USD" class="w-8 h-8 rounded-full object-cover shadow-sm mr-3 border border-slate-100 dark:border-slate-800" />
-                                    <select id="from-currency" class="w-full bg-transparent text-xl font-bold text-slate-900 dark:text-white outline-none appearance-none cursor-pointer">
-                                        <!-- Options injected via JS -->
-                                    </select>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 pointer-events-none"></i>
+                        <!-- Custom FROM & TO Selector Wrapper -->
+                        <div class="w-full md:w-[70%] relative flex flex-col md:flex-row gap-4 md:gap-6">
+                            
+                            <!-- FROM Dropdown -->
+                            <div class="w-full relative z-30">
+                                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">From</label>
+                                <div id="from-currency-container" class="border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950 h-[68px]">
+                                    <!-- Injected via CustomSelect -->
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Swap Button (Centered naturally using negative margins on mobile) -->
-                        <div class="z-10 -my-7 md:my-0 md:mb-2 flex justify-center w-full md:w-auto">
-                            <button id="swap-btn" class="bg-blue-600 text-white p-3 md:p-4 rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-colors border-4 border-white dark:border-slate-900 md:border-none relative" aria-label="Swap Currencies">
-                                <i data-lucide="arrow-down-up" class="w-5 h-5 md:hidden"></i>
-                                <i data-lucide="arrow-right-left" class="w-6 h-6 hidden md:block"></i>
-                            </button>
-                        </div>
+                            <!-- SWAP Button (Absolutely centered perfectly between From & To) -->
+                            <div class="absolute left-1/2 top-[calc(50%+14px)] -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 z-40 md:z-10 flex-shrink-0 flex items-center mt-0 md:mt-7">
+                                <button id="swap-btn" class="bg-blue-600 text-white p-3.5 md:p-4 rounded-full shadow-lg shadow-blue-600/40 hover:bg-blue-700 transition-all border-[6px] border-white dark:border-slate-900 md:border-none group hover:scale-105" aria-label="Swap Currencies">
+                                    <!-- Mobile Icon -->
+                                    <i data-lucide="arrow-down-up" class="w-5 h-5 md:hidden transition-transform group-active:rotate-180"></i>
+                                    <!-- Desktop Icon -->
+                                    <i data-lucide="arrow-right-left" class="w-6 h-6 hidden md:block transition-transform group-active:rotate-180"></i>
+                                </button>
+                            </div>
 
-                        <!-- To Currency -->
-                        <div class="flex-1 w-full">
-                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">To</label>
-                            <div class="relative border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950">
-                                <div class="flex items-center px-4 py-4">
-                                    <img id="to-flag" src="https://flagcdn.com/w40/eu.png" alt="EUR" class="w-8 h-8 rounded-full object-cover shadow-sm mr-3 border border-slate-100 dark:border-slate-800" />
-                                    <select id="to-currency" class="w-full bg-transparent text-xl font-bold text-slate-900 dark:text-white outline-none appearance-none cursor-pointer">
-                                        <!-- Options injected via JS -->
-                                    </select>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 pointer-events-none"></i>
+                            <!-- TO Dropdown -->
+                            <div class="w-full relative z-20">
+                                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">To</label>
+                                <div id="to-currency-container" class="border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-xl transition-all bg-white dark:bg-slate-950 h-[68px]">
+                                    <!-- Injected via CustomSelect -->
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
                     <!-- Results Area -->
-                    <div class="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 relative z-0">
                         <div class="flex-1 text-center md:text-left w-full">
                             
                             <!-- Skeleton Loader -->
@@ -273,7 +283,7 @@
             </div>
 
             <!-- Rates Grid Container -->
-            <div id="rates-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div id="rates-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-0">
                 <!-- Cards injected via JS -->
             </div>
         </section>
@@ -285,26 +295,23 @@
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-3xl p-6 md:p-10">
                 
                 <!-- Chart Controls -->
-                <div class="flex flex-wrap items-end gap-4 mb-8 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Reference (Base)</label>
-                        <select id="chart-base-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+                <div class="flex flex-col md:flex-row items-end gap-4 mb-8 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 relative z-10">
+                    <div class="flex-1 w-full relative z-30">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Reference (Base)</label>
+                        <div id="chart-base-container" class="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 h-11"></div>
                     </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Currency A</label>
-                        <select id="chart-curr1-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+                    <div class="flex-1 w-full relative z-20">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Currency A</label>
+                        <div id="chart-curr1-container" class="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 h-11"></div>
                     </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Currency B (Compare)</label>
-                        <select id="chart-curr2-select" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
-                            <option value="NONE">None - Single Chart</option>
-                            <!-- other options injected via JS -->
-                        </select>
+                    <div class="flex-1 w-full relative z-10">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Currency B (Compare)</label>
+                        <div id="chart-curr2-container" class="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 h-11"></div>
                     </div>
                 </div>
 
                 <!-- Chart Header -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-0">
                     <div>
                         <h2 class="text-2xl md:text-3xl font-extrabold flex flex-wrap items-center gap-3">
                             <span id="chart-main-title" class="text-slate-900 dark:text-white">EUR to USD Chart</span>
@@ -322,7 +329,7 @@
                 </div>
 
                 <!-- Timeframes -->
-                <div class="flex flex-wrap gap-2 justify-center mb-8" id="chart-timeframes">
+                <div class="flex flex-wrap gap-2 justify-center mb-8 relative z-0" id="chart-timeframes">
                     <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-tf="1W">1W</button>
                     <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-tf="1M">1M</button>
                     <button class="tf-btn px-4 py-1.5 text-sm font-semibold rounded-full bg-blue-600 text-white shadow-md shadow-blue-600/20 transition-colors" data-tf="1Y">1Y</button>
@@ -330,7 +337,7 @@
                 </div>
 
                 <!-- Main Canvas -->
-                <div class="w-full h-[400px] md:h-[500px] relative">
+                <div class="w-full h-[400px] md:h-[500px] relative z-0">
                     <canvas id="big-chart"></canvas>
                 </div>
                 
@@ -399,47 +406,259 @@
 
     <!-- MAIN JAVASCRIPT -->
     <script>
-        // --- CONSTANTS & DATA ---
-        const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'NZD'];
-        
-        const CURRENCY_FLAGS = {
-            USD: 'us', EUR: 'eu', GBP: 'gb', JPY: 'jp', AUD: 'au', 
-            CAD: 'ca', CHF: 'ch', CNY: 'cn', INR: 'in', NZD: 'nz'
-        };
+        // --- CONSTANTS & EXTENDED CURRENCY DATA ---
+        const CURRENCIES = [
+            { code: 'USD', name: 'US Dollar', flag: 'us', symbol: '$' },
+            { code: 'EUR', name: 'Euro', flag: 'eu', symbol: '€' },
+            { code: 'GBP', name: 'British Pound', flag: 'gb', symbol: '£' },
+            { code: 'JPY', name: 'Japanese Yen', flag: 'jp', symbol: '¥' },
+            { code: 'AUD', name: 'Australian Dollar', flag: 'au', symbol: 'A$' },
+            { code: 'CAD', name: 'Canadian Dollar', flag: 'ca', symbol: 'C$' },
+            { code: 'CHF', name: 'Swiss Franc', flag: 'ch', symbol: 'CHF' },
+            { code: 'CNY', name: 'Chinese Yuan', flag: 'cn', symbol: '¥' },
+            { code: 'INR', name: 'Indian Rupee', flag: 'in', symbol: '₹' },
+            { code: 'NZD', name: 'New Zealand Dollar', flag: 'nz', symbol: 'NZ$' },
+            { code: 'AED', name: 'UAE Dirham', flag: 'ae', symbol: 'د.إ' },
+            { code: 'ARS', name: 'Argentine Peso', flag: 'ar', symbol: '$' },
+            { code: 'BRL', name: 'Brazilian Real', flag: 'br', symbol: 'R$' },
+            { code: 'CZK', name: 'Czech Koruna', flag: 'cz', symbol: 'Kč' },
+            { code: 'DKK', name: 'Danish Krone', flag: 'dk', symbol: 'kr' },
+            { code: 'EGP', name: 'Egyptian Pound', flag: 'eg', symbol: 'E£' },
+            { code: 'HKD', name: 'Hong Kong Dollar', flag: 'hk', symbol: 'HK$' },
+            { code: 'HUF', name: 'Hungarian Forint', flag: 'hu', symbol: 'Ft' },
+            { code: 'IDR', name: 'Indonesian Rupiah', flag: 'id', symbol: 'Rp' },
+            { code: 'ILS', name: 'Israeli New Shekel', flag: 'il', symbol: '₪' },
+            { code: 'KES', name: 'Kenyan Shilling', flag: 'ke', symbol: 'KSh' },
+            { code: 'KRW', name: 'South Korean Won', flag: 'kr', symbol: '₩' },
+            { code: 'KWD', name: 'Kuwaiti Dinar', flag: 'kw', symbol: 'KD' },
+            { code: 'MXN', name: 'Mexican Peso', flag: 'mx', symbol: '$' },
+            { code: 'MYR', name: 'Malaysian Ringgit', flag: 'my', symbol: 'RM' },
+            { code: 'NGN', name: 'Nigerian Naira', flag: 'ng', symbol: '₦' },
+            { code: 'NOK', name: 'Norwegian Krone', flag: 'no', symbol: 'kr' },
+            { code: 'PHP', name: 'Philippine Peso', flag: 'ph', symbol: '₱' },
+            { code: 'PKR', name: 'Pakistani Rupee', flag: 'pk', symbol: 'Rs' },
+            { code: 'PLN', name: 'Polish Zloty', flag: 'pl', symbol: 'zł' },
+            { code: 'QAR', name: 'Qatari Riyal', flag: 'qa', symbol: 'QR' },
+            { code: 'RUB', name: 'Russian Ruble', flag: 'ru', symbol: '₽' },
+            { code: 'SAR', name: 'Saudi Riyal', flag: 'sa', symbol: 'SR' },
+            { code: 'SEK', name: 'Swedish Krona', flag: 'se', symbol: 'kr' },
+            { code: 'SGD', name: 'Singapore Dollar', flag: 'sg', symbol: 'S$' },
+            { code: 'THB', name: 'Thai Baht', flag: 'th', symbol: '฿' },
+            { code: 'TRY', name: 'Turkish Lira', flag: 'tr', symbol: '₺' },
+            { code: 'TWD', name: 'New Taiwan Dollar', flag: 'tw', symbol: 'NT$' },
+            { code: 'VND', name: 'Vietnamese Dong', flag: 'vn', symbol: '₫' },
+            { code: 'ZAR', name: 'South African Rand', flag: 'za', symbol: 'R' }
+        ];
 
-        const CURRENCY_NAMES = {
-            USD: 'US Dollar', EUR: 'Euro', GBP: 'British Pound', JPY: 'Japanese Yen',
-            AUD: 'Australian Dollar', CAD: 'Canadian Dollar', CHF: 'Swiss Franc',
-            CNY: 'Chinese Yuan', INR: 'Indian Rupee', NZD: 'New Zealand Dollar'
-        };
+        // --- CUSTOM SELECT UI COMPONENT ---
+        class CustomSelect {
+            constructor(config) {
+                this.container = document.getElementById(config.containerId);
+                this.options = config.options; // Array of objects
+                this.value = config.initialValue;
+                this.onChange = config.onChange;
+                this.allowNone = config.allowNone || false;
+                this.compact = config.compact || false; // smaller UI for charts
+                
+                this.isOpen = false;
+                this.render();
+                this.attachEvents();
+            }
 
-        const CURRENCY_SYMBOLS = {
-            USD: '$', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', 
-            CAD: 'C$', CHF: 'CHF', CNY: '¥', INR: '₹', NZD: 'NZ$'
-        };
+            getSelectedObj() {
+                if (this.allowNone && this.value === 'NONE') return { code: 'NONE', name: 'None - Single Chart', flag: null };
+                return this.options.find(o => o.code === this.value) || this.options[0];
+            }
 
-        // --- STATE ---
+            render() {
+                const sel = this.getSelectedObj();
+                const paddingClass = this.compact ? "px-3 py-2" : "px-4 py-4";
+                const textClass = this.compact ? "text-sm" : "text-xl";
+                
+                let flagImg = sel.flag ? `<img src="https://flagcdn.com/w40/${sel.flag}.png" class="w-6 h-6 rounded-full object-cover shadow-sm shrink-0">` : `<div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 flex justify-center items-center"><i data-lucide="minus" class="w-4 h-4 text-slate-400"></i></div>`;
+
+                this.container.innerHTML = `
+                    <div class="relative w-full h-full custom-select-wrapper">
+                        <button type="button" class="select-trigger w-full h-full flex items-center justify-between ${paddingClass} bg-transparent outline-none">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                ${flagImg}
+                                <span class="selected-text ${textClass} font-bold text-slate-900 dark:text-white truncate">
+                                    ${sel.code === 'NONE' ? sel.name : `${sel.code} - ${sel.name}`}
+                                </span>
+                            </div>
+                            <i data-lucide="chevron-down" class="chevron-icon w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200"></i>
+                        </button>
+                        
+                        <div class="select-dropdown absolute z-50 left-0 right-0 mt-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl hidden max-h-[320px] flex-col overflow-hidden origin-top transform opacity-0 scale-95 transition-all duration-200">
+                            <div class="p-3 border-b border-slate-100 dark:border-slate-700">
+                                <div class="relative">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                    <input type="text" placeholder="Search currency..." class="search-input w-full bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-shadow">
+                                </div>
+                            </div>
+                            <ul class="options-list overflow-y-auto custom-scrollbar p-2 flex-1 flex flex-col gap-0.5">
+                                ${this.renderOptionsList(this.options)}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+
+            renderOptionsList(opts) {
+                let html = '';
+                if (this.allowNone) {
+                    const isSel = this.value === 'NONE';
+                    html += `
+                    <li>
+                        <button type="button" data-value="NONE" class="option-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors ${isSel ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'}">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0"><i data-lucide="minus" class="w-4 h-4 text-slate-400"></i></div>
+                                <span class="font-semibold text-sm">None - Single Chart</span>
+                            </div>
+                            ${isSel ? '<i data-lucide="check" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>' : ''}
+                        </button>
+                    </li>`;
+                }
+
+                opts.forEach(opt => {
+                    const isSel = this.value === opt.code;
+                    html += `
+                    <li>
+                        <button type="button" data-value="${opt.code}" class="option-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors ${isSel ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'}">
+                            <div class="flex items-center gap-3">
+                                <img src="https://flagcdn.com/w40/${opt.flag}.png" class="w-6 h-6 rounded-full object-cover shadow-sm shrink-0">
+                                <span class="font-semibold text-sm text-left line-clamp-1">${opt.code} - ${opt.name}</span>
+                            </div>
+                            ${isSel ? '<i data-lucide="check" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>' : ''}
+                        </button>
+                    </li>`;
+                });
+                return html;
+            }
+
+            attachEvents() {
+                const trigger = this.container.querySelector('.select-trigger');
+                const dropdown = this.container.querySelector('.select-dropdown');
+                const search = this.container.querySelector('.search-input');
+                const chevron = this.container.querySelector('.chevron-icon');
+
+                // Toggle dropdown
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.select-dropdown').forEach(dd => {
+                        if (dd !== dropdown && !dd.classList.contains('hidden')) {
+                            dd.classList.add('hidden');
+                            dd.classList.replace('opacity-100', 'opacity-0');
+                            dd.classList.replace('scale-100', 'scale-95');
+                            const otherIcon = dd.parentElement.querySelector('.chevron-icon');
+                            if(otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+                        }
+                    });
+
+                    this.isOpen = !this.isOpen;
+                    if (this.isOpen) {
+                        dropdown.classList.remove('hidden');
+                        // Small delay to allow display:block to apply before animating opacity
+                        setTimeout(() => {
+                            dropdown.classList.replace('opacity-0', 'opacity-100');
+                            dropdown.classList.replace('scale-95', 'scale-100');
+                        }, 10);
+                        chevron.style.transform = 'rotate(180deg)';
+                        search.value = ''; // clear search on open
+                        this.filterOptions('');
+                        setTimeout(() => search.focus(), 100);
+                    } else {
+                        this.closeDropdown(dropdown, chevron);
+                    }
+                });
+
+                // Option clicks
+                this.container.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.option-btn');
+                    if (btn) {
+                        const newVal = btn.dataset.value;
+                        if (newVal !== this.value) {
+                            this.setValue(newVal, true);
+                        }
+                        this.closeDropdown(dropdown, chevron);
+                    }
+                });
+
+                // Search
+                search.addEventListener('input', (e) => {
+                    this.filterOptions(e.target.value.toLowerCase());
+                });
+
+                // Close on click outside
+                document.addEventListener('click', (e) => {
+                    if (this.isOpen && !this.container.contains(e.target)) {
+                        this.closeDropdown(dropdown, chevron);
+                    }
+                });
+            }
+
+            filterOptions(query) {
+                const list = this.container.querySelector('.options-list');
+                const filteredOpts = this.options.filter(o => 
+                    o.code.toLowerCase().includes(query) || 
+                    o.name.toLowerCase().includes(query)
+                );
+                list.innerHTML = this.renderOptionsList(filteredOpts);
+                lucide.createIcons(); // Re-init checkmarks
+            }
+
+            closeDropdown(dropdown, chevron) {
+                this.isOpen = false;
+                dropdown.classList.replace('opacity-100', 'opacity-0');
+                dropdown.classList.replace('scale-100', 'scale-95');
+                chevron.style.transform = 'rotate(0deg)';
+                setTimeout(() => dropdown.classList.add('hidden'), 200); // wait for anim
+            }
+
+            setValue(newCode, triggerEvent = false) {
+                this.value = newCode;
+                // Re-render internally just to update the trigger and list UI safely
+                this.render();
+                this.attachEvents(); 
+                if (triggerEvent && this.onChange) {
+                    this.onChange(this.value);
+                }
+            }
+        }
+
+
+        // --- STATE & APP ---
         let state = {
             amount: 1000,
-            fromCurrency: 'USD',
-            toCurrency: 'EUR',
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
             rates: {},
             lastUpdated: null,
             isLoading: true,
             
             // Big Chart State
             chartView: {
-                base: 'USD',
-                curr1: 'EUR',
+                base: 'EUR',
+                curr1: 'USD',
                 curr2: 'NONE',
                 timeframe: '1Y', // 1W, 1M, 1Y, 5Y
                 instance: null
             }
         };
 
-        // --- DOM ELEMENTS ---
+        // References to our class instances
+        const selects = {
+            from: null,
+            to: null,
+            chartBase: null,
+            chartCurr1: null,
+            chartCurr2: null
+        };
+
         const els = {
-            // Nav Elements
             navPersonal: document.getElementById('nav-personal'),
             navChart: document.getElementById('nav-chart'),
             mobileNavPersonal: document.getElementById('mobile-nav-personal'),
@@ -447,13 +666,8 @@
             viewPersonal: document.getElementById('view-personal'),
             viewChart: document.getElementById('view-chart'),
 
-            // Converter Elements
             amountInput: document.getElementById('amount-input'),
             currencySymbol: document.getElementById('currency-symbol'),
-            fromSelect: document.getElementById('from-currency'),
-            toSelect: document.getElementById('to-currency'),
-            fromFlag: document.getElementById('from-flag'),
-            toFlag: document.getElementById('to-flag'),
             swapBtn: document.getElementById('swap-btn'),
             
             resultSkeleton: document.getElementById('result-skeleton'),
@@ -471,15 +685,10 @@
             errorContainer: document.getElementById('error-message'),
             errorText: document.getElementById('error-text'),
             
-            // Table Elements
             ratesGrid: document.getElementById('rates-grid'),
             tableBaseCurrency: document.getElementById('table-base-currency'),
             refreshBtn: document.getElementById('refresh-rates-btn'),
 
-            // Big Chart Elements
-            chartBaseSelect: document.getElementById('chart-base-select'),
-            chartCurr1Select: document.getElementById('chart-curr1-select'),
-            chartCurr2Select: document.getElementById('chart-curr2-select'),
             chartMainTitle: document.getElementById('chart-main-title'),
             chartMainChange: document.getElementById('chart-main-change'),
             chartMainSubtitle: document.getElementById('chart-main-subtitle'),
@@ -497,65 +706,113 @@
             mobileMenu: document.getElementById('mobile-menu')
         };
 
-        // --- INITIALIZATION ---
+        function getSymbol(code) {
+            const cur = CURRENCIES.find(c => c.code === code);
+            return cur ? cur.symbol : code;
+        }
+
         function init() {
             lucide.createIcons();
             document.getElementById('current-year').textContent = new Date().getFullYear();
 
-            // Populate Dropdowns for Converter
-            let optionsHTML = '';
-            SUPPORTED_CURRENCIES.forEach(c => {
-                optionsHTML += `<option value="${c}" class="text-slate-900">${c} - ${CURRENCY_NAMES[c]}</option>`;
-            });
-            els.fromSelect.innerHTML = optionsHTML;
-            els.toSelect.innerHTML = optionsHTML;
-            els.fromSelect.value = state.fromCurrency;
-            els.toSelect.value = state.toCurrency;
+            els.amountInput.value = state.amount;
+            els.currencySymbol.textContent = getSymbol(state.fromCurrency);
 
-            // Populate Dropdowns for Big Chart
-            els.chartBaseSelect.innerHTML = optionsHTML;
-            els.chartCurr1Select.innerHTML = optionsHTML;
-            els.chartCurr2Select.innerHTML = '<option value="NONE">None - Single Chart</option>' + optionsHTML;
-            
-            els.chartBaseSelect.value = state.chartView.base;
-            els.chartCurr1Select.value = state.chartView.curr1;
-            els.chartCurr2Select.value = state.chartView.curr2;
-            
-            updateFlags();
+            // Init Custom Selects
+            selects.from = new CustomSelect({
+                containerId: 'from-currency-container',
+                options: CURRENCIES,
+                initialValue: state.fromCurrency,
+                onChange: (val) => {
+                    state.fromCurrency = val;
+                    els.currencySymbol.textContent = getSymbol(val);
+                    fetchRates();
+                }
+            });
+
+            selects.to = new CustomSelect({
+                containerId: 'to-currency-container',
+                options: CURRENCIES,
+                initialValue: state.toCurrency,
+                onChange: (val) => {
+                    state.toCurrency = val;
+                    updateConversion();
+                }
+            });
+
+            // Chart Custom Selects
+            selects.chartBase = new CustomSelect({
+                containerId: 'chart-base-container',
+                options: CURRENCIES,
+                initialValue: state.chartView.base,
+                compact: true,
+                onChange: (val) => {
+                    if(val === state.chartView.curr1) {
+                        state.chartView.curr1 = state.chartView.base;
+                        selects.chartCurr1.setValue(state.chartView.curr1);
+                    }
+                    state.chartView.base = val;
+                    renderBigChart();
+                }
+            });
+
+            selects.chartCurr1 = new CustomSelect({
+                containerId: 'chart-curr1-container',
+                options: CURRENCIES,
+                initialValue: state.chartView.curr1,
+                compact: true,
+                onChange: (val) => {
+                    if(val === state.chartView.base) {
+                        state.chartView.base = state.chartView.curr1;
+                        selects.chartBase.setValue(state.chartView.base);
+                    }
+                    state.chartView.curr1 = val;
+                    renderBigChart();
+                }
+            });
+
+            selects.chartCurr2 = new CustomSelect({
+                containerId: 'chart-curr2-container',
+                options: CURRENCIES,
+                initialValue: state.chartView.curr2,
+                allowNone: true,
+                compact: true,
+                onChange: (val) => {
+                    state.chartView.curr2 = val;
+                    renderBigChart();
+                }
+            });
+
             setupTheme();
             setupTabs();
             setupChartListeners();
 
-            // Converter Event Listeners
+            // Inputs & Swap
             els.amountInput.addEventListener('input', debounce((e) => {
                 state.amount = parseFloat(e.target.value) || 0;
                 updateConversion();
             }, 500));
 
-            els.fromSelect.addEventListener('change', (e) => {
-                state.fromCurrency = e.target.value;
-                updateFlags();
-                fetchRates();
-            });
-
-            els.toSelect.addEventListener('change', (e) => {
-                state.toCurrency = e.target.value;
-                updateFlags();
-                updateConversion();
-            });
-
-            // Update to animate the button itself instead of just the icon
             els.swapBtn.addEventListener('click', () => {
-                els.swapBtn.classList.add('spin-once');
-                setTimeout(() => els.swapBtn.classList.remove('spin-once'), 300);
+                // Spin animation logic
+                const iconDesktop = els.swapBtn.querySelector('.md\\:block');
+                const iconMobile = els.swapBtn.querySelector('.md\\:hidden');
                 
+                [iconDesktop, iconMobile].forEach(icon => {
+                    icon.classList.add('spin-once');
+                    setTimeout(() => icon.classList.remove('spin-once'), 300);
+                });
+                
+                // State swap
                 const temp = state.fromCurrency;
                 state.fromCurrency = state.toCurrency;
                 state.toCurrency = temp;
                 
-                els.fromSelect.value = state.fromCurrency;
-                els.toSelect.value = state.toCurrency;
-                updateFlags();
+                // Update UI visually
+                selects.from.setValue(state.fromCurrency);
+                selects.to.setValue(state.toCurrency);
+                els.currencySymbol.textContent = getSymbol(state.fromCurrency);
+                
                 fetchRates();
             });
 
@@ -606,11 +863,9 @@
                     els.mobileNavChart.classList.replace('text-slate-300', 'text-blue-400');
                     els.mobileNavPersonal.classList.replace('text-blue-400', 'text-slate-300');
                     
-                    // Render chart when switching to view
                     renderBigChart();
                 }
                 
-                // close mobile menu if open
                 els.mobileMenu.classList.add('hidden');
                 els.mobileMenuIcon.setAttribute('data-lucide', 'menu');
                 lucide.createIcons();
@@ -618,12 +873,10 @@
 
             els.navPersonal.addEventListener('click', () => window.setTab('personal'));
             els.mobileNavPersonal.addEventListener('click', () => window.setTab('personal'));
-            
             els.navChart.addEventListener('click', () => window.setTab('chart'));
             els.mobileNavChart.addEventListener('click', () => window.setTab('chart'));
         }
 
-        // --- UTILS ---
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -631,12 +884,6 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
-        }
-
-        function updateFlags() {
-            els.fromFlag.src = `https://flagcdn.com/w40/${CURRENCY_FLAGS[state.fromCurrency]}.png`;
-            els.toFlag.src = `https://flagcdn.com/w40/${CURRENCY_FLAGS[state.toCurrency]}.png`;
-            els.currencySymbol.textContent = CURRENCY_SYMBOLS[state.fromCurrency] || state.fromCurrency;
         }
 
         function getMock24hChange(currency) {
@@ -674,7 +921,6 @@
                     updateConversion();
                     renderCards();
                     
-                    // If in chart view, refresh that too if base matches
                     if(els.viewChart.classList.contains('active')) {
                         renderBigChart();
                     }
@@ -746,7 +992,8 @@
             els.tableBaseCurrency.textContent = state.fromCurrency;
 
             let html = '';
-            const filteredCurrencies = SUPPORTED_CURRENCIES.filter(c => c !== state.fromCurrency).slice(0, 8); // Showing up to 8 cards
+            const topCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'ZAR', 'SGD', 'NZD'];
+            const filteredCurrencies = topCurrencies.filter(c => c !== state.fromCurrency).slice(0, 8); 
             
             filteredCurrencies.forEach(currency => {
                 const rate = state.rates[currency] || 0;
@@ -754,14 +1001,16 @@
                 const isPositive = changePct >= 0;
                 const changeAmt = rate * (Math.abs(changePct) / 100);
                 
+                const curObj = CURRENCIES.find(c => c.code === currency) || {name: currency, flag: currency.toLowerCase().substring(0,2)};
+                
                 const colorClass = isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400';
                 const sign = isPositive ? '+' : '-';
 
                 html += `
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-center gap-3 mb-6">
-                        <img src="https://flagcdn.com/w40/${CURRENCY_FLAGS[currency]}.png" alt="${currency}" class="w-6 h-6 rounded-full object-cover shadow-sm" />
-                        <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">${CURRENCY_NAMES[currency]}</span>
+                        <img src="https://flagcdn.com/w40/${curObj.flag}.png" alt="${currency}" class="w-6 h-6 rounded-full object-cover shadow-sm" />
+                        <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">${curObj.name}</span>
                     </div>
                     
                     <div class="mb-4">
@@ -783,50 +1032,22 @@
         }
 
         window.viewChartFor = function(currency) {
-            // Update big chart state
             state.chartView.base = state.fromCurrency;
             state.chartView.curr1 = currency;
             state.chartView.curr2 = 'NONE';
             
-            // Sync dropdowns in the chart view
-            els.chartBaseSelect.value = state.chartView.base;
-            els.chartCurr1Select.value = state.chartView.curr1;
-            els.chartCurr2Select.value = state.chartView.curr2;
+            selects.chartBase.setValue(state.chartView.base);
+            selects.chartCurr1.setValue(state.chartView.curr1);
+            selects.chartCurr2.setValue(state.chartView.curr2);
             
-            // Switch tab
             window.setTab('chart');
             window.scrollTo({top: 0, behavior: 'smooth'});
         };
 
-
         // --- BIG CHART LOGIC ---
         function setupChartListeners() {
-            els.chartBaseSelect.addEventListener('change', (e) => {
-                if(e.target.value === state.chartView.curr1) {
-                    state.chartView.curr1 = state.chartView.base; // Swap
-                    els.chartCurr1Select.value = state.chartView.curr1;
-                }
-                state.chartView.base = e.target.value;
-                renderBigChart();
-            });
-
-            els.chartCurr1Select.addEventListener('change', (e) => {
-                if(e.target.value === state.chartView.base) {
-                    state.chartView.base = state.chartView.curr1; // Swap
-                    els.chartBaseSelect.value = state.chartView.base;
-                }
-                state.chartView.curr1 = e.target.value;
-                renderBigChart();
-            });
-
-            els.chartCurr2Select.addEventListener('change', (e) => {
-                state.chartView.curr2 = e.target.value;
-                renderBigChart();
-            });
-
             els.chartTimeframeBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    // Update active button styling
                     els.chartTimeframeBtns.forEach(b => {
                         b.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-600/20');
                         b.classList.add('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-800');
@@ -853,8 +1074,7 @@
                 const date = new Date(now);
                 date.setDate(date.getDate() - i);
                 
-                // Random walk logic
-                if(i !== days) { // Keep start rate at index 0 for indexing
+                if(i !== days) { 
                     const changePercent = (Math.random() * 2 - 1) * volatility;
                     currentRate = currentRate * (1 + changePercent);
                 }
@@ -862,7 +1082,7 @@
                 labels.push(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: days > 365 ? 'numeric' : undefined }));
                 
                 if (isIndex) {
-                    data.push(((currentRate / startRate) - 1) * 100); // Percentage change
+                    data.push(((currentRate / startRate) - 1) * 100); 
                 } else {
                     data.push(currentRate);
                 }
@@ -871,57 +1091,49 @@
         }
 
         async function renderBigChart() {
-            // Need actual base rate to start the mock generation realistically
             let actualRate1 = 1;
             let actualRate2 = 1;
             
-            // To simulate, we'll try to use the latest rates if available
             if(state.rates[state.chartView.curr1] && state.chartView.base === state.fromCurrency) {
                 actualRate1 = state.rates[state.chartView.curr1];
             } else {
-                actualRate1 = (Math.random() * 1.5) + 0.5; // fallback
+                actualRate1 = (Math.random() * 1.5) + 0.5; 
             }
 
             if(state.chartView.curr2 !== 'NONE') {
                 if(state.rates[state.chartView.curr2] && state.chartView.base === state.fromCurrency) {
                     actualRate2 = state.rates[state.chartView.curr2];
                 } else {
-                    actualRate2 = (Math.random() * 1.5) + 0.5; // fallback
+                    actualRate2 = (Math.random() * 1.5) + 0.5;
                 }
             }
 
-            let days = 30; // 1M default
+            let days = 30; 
             if(state.chartView.timeframe === '1W') days = 7;
             if(state.chartView.timeframe === '1Y') days = 365;
             if(state.chartView.timeframe === '5Y') days = 365 * 5;
 
             const isComparison = state.chartView.curr2 !== 'NONE';
             
-            // Generate Data
             const series1 = generateMockTimeSeries(actualRate1, days, isComparison);
             const series2 = isComparison ? generateMockTimeSeries(actualRate2, days, isComparison) : null;
 
-            // Calculate percentage change for UI Title
             const startVal1 = series1.data[0];
             const endVal1 = series1.data[series1.data.length - 1];
-            let percentChange = 0;
-            if (isComparison) {
-                percentChange = endVal1; // it's already a % change
-            } else {
-                percentChange = ((endVal1 - startVal1) / startVal1) * 100;
-            }
-
+            let percentChange = isComparison ? endVal1 : ((endVal1 - startVal1) / startVal1) * 100;
             const isPositive = percentChange >= 0;
+            
+            const curr1Name = CURRENCIES.find(c => c.code === state.chartView.curr1)?.name || state.chartView.curr1;
+            const baseName = CURRENCIES.find(c => c.code === state.chartView.base)?.name || state.chartView.base;
 
-            // Update DOM Texts
             if (isComparison) {
                 els.chartMainTitle.textContent = `${state.chartView.curr1} & ${state.chartView.curr2} vs ${state.chartView.base}`;
-                els.chartMainSubtitle.textContent = `Comparison tracking percentage change against ${CURRENCY_NAMES[state.chartView.base]}`;
+                els.chartMainSubtitle.textContent = `Comparison tracking percentage change against ${baseName}`;
                 els.chartCurrentRateText.textContent = `Comparing Performance`;
                 els.chartComparisonNote.classList.remove('hidden');
             } else {
                 els.chartMainTitle.textContent = `${state.chartView.curr1} to ${state.chartView.base} Chart`;
-                els.chartMainSubtitle.textContent = `${CURRENCY_NAMES[state.chartView.curr1]} to ${CURRENCY_NAMES[state.chartView.base]}`;
+                els.chartMainSubtitle.textContent = `${curr1Name} to ${baseName}`;
                 els.chartCurrentRateText.textContent = `1 ${state.chartView.curr1} = ${endVal1.toFixed(4)} ${state.chartView.base}`;
                 els.chartComparisonNote.classList.add('hidden');
             }
@@ -931,22 +1143,20 @@
             
             els.chartDateText.textContent = new Date().toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
 
-            // Initialize or Update Chart.js
             const ctx = els.chartCanvas.getContext('2d');
             
-            // Premium gradients
             const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.4)'); // Tailwind blue-600
+            gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.4)'); 
             gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
 
             const gradientPurple = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientPurple.addColorStop(0, 'rgba(147, 51, 234, 0.4)'); // Tailwind purple-600
+            gradientPurple.addColorStop(0, 'rgba(147, 51, 234, 0.4)'); 
             gradientPurple.addColorStop(1, 'rgba(147, 51, 234, 0.0)');
 
             const datasets = [{
                 label: state.chartView.curr1,
                 data: series1.data,
-                borderColor: '#2563eb', // blue-600
+                borderColor: '#2563eb', 
                 backgroundColor: gradientBlue,
                 borderWidth: 2,
                 fill: true,
@@ -959,7 +1169,7 @@
                 datasets.push({
                     label: state.chartView.curr2,
                     data: series2.data,
-                    borderColor: '#9333ea', // purple-600
+                    borderColor: '#9333ea', 
                     backgroundColor: gradientPurple,
                     borderWidth: 2,
                     fill: true,
@@ -973,7 +1183,6 @@
                 state.chartView.instance.destroy();
             }
 
-            // Detect theme for axes color
             const isDark = document.documentElement.classList.contains('dark');
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
             const tickColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
@@ -1064,7 +1273,6 @@
                     if(icon) icon.setAttribute('data-lucide', iconName);
                 });
                 lucide.createIcons();
-                // Rerender big chart to update colors if active
                 if(state.chartView.instance) renderBigChart(); 
             };
             updateIcons();
