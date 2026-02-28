@@ -1069,49 +1069,61 @@
             });
         }
 
-        function generateMockTimeSeries(startRate, days, isIndex = false) {
+        function generateMockTimeSeries(latestRate, days, isIndex = false) {
             let labels = [];
-            let data = [];
-            let currentRate = startRate;
+            let prices = [latestRate];
+            let currentRate = latestRate;
             let volatility = 0.005; // daily volatility
+
+            // Generate prices walking backwards so the latest date matches exactly
+            for (let i = 1; i <= days; i++) {
+                const changePercent = (Math.random() * 2 - 1) * volatility;
+                currentRate = currentRate / (1 + changePercent);
+                prices.push(currentRate);
+            }
+            prices.reverse(); // put chronological order (oldest first, newest last)
 
             const now = new Date();
             for (let i = days; i >= 0; i--) {
                 const date = new Date(now);
                 date.setDate(date.getDate() - i);
-                
-                if(i !== days) { 
-                    const changePercent = (Math.random() * 2 - 1) * volatility;
-                    currentRate = currentRate * (1 + changePercent);
-                }
-
                 labels.push(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: days > 365 ? 'numeric' : undefined }));
-                
-                if (isIndex) {
-                    data.push(((currentRate / startRate) - 1) * 100); 
-                } else {
-                    data.push(currentRate);
-                }
             }
+
+            let data = [];
+            if (isIndex) {
+                const startPrice = prices[0];
+                data = prices.map(p => ((p / startPrice) - 1) * 100); 
+            } else {
+                data = prices;
+            }
+
             return { labels, data };
         }
 
-        async function renderBigChart() {
-            let actualRate1 = 1;
-            let actualRate2 = 1;
+        function getCrossRate(fromCode, toCode) {
+            if (fromCode === toCode) return 1;
             
-            if(state.rates[state.chartView.curr1] && state.chartView.base === state.fromCurrency) {
-                actualRate1 = state.rates[state.chartView.curr1];
-            } else {
-                actualRate1 = (Math.random() * 1.5) + 0.5; 
+            const getRate = (code) => {
+                if (code === state.fromCurrency) return 1;
+                return state.rates[code] || null;
+            };
+
+            const rFrom = getRate(fromCode);
+            const rTo = getRate(toCode);
+            
+            if (rFrom && rTo) {
+                return rTo / rFrom;
             }
+            return (Math.random() * 1.5) + 0.5; // fallback
+        }
+
+        async function renderBigChart() {
+            let actualRate1 = getCrossRate(state.chartView.curr1, state.chartView.base);
+            let actualRate2 = 1;
 
             if(state.chartView.curr2 !== 'NONE') {
-                if(state.rates[state.chartView.curr2] && state.chartView.base === state.fromCurrency) {
-                    actualRate2 = state.rates[state.chartView.curr2];
-                } else {
-                    actualRate2 = (Math.random() * 1.5) + 0.5;
-                }
+                actualRate2 = getCrossRate(state.chartView.curr2, state.chartView.base);
             }
 
             let days = 30; 
